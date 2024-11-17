@@ -10,13 +10,15 @@
   "scripts": {
     "build": "tsc",
     "start": "tsx src/cli.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prettier": "prettier --write ."
   },
   "author": "Gareth Andrew",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.9.0",
     "@types/yargs": "^17.0.33",
+    "prettier": "^3.3.3",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   },
