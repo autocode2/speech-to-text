@@ -7,10 +7,10 @@ export interface TranscriptionOptions {
   prompt?: string;
 }
 
-const defaultOptions: Partial<TranscriptionOptions> = {
+const defaultOptions = {
   model: "gemini-1.5-flash",
   prompt: "Transcribe this audio clip word for word.",
-};
+} as const;
 
 /**
  * Transcribes an audio file using Google's Gemini API
@@ -20,13 +20,12 @@ const defaultOptions: Partial<TranscriptionOptions> = {
  */
 export async function transcribeAudio(
   audioPath: string,
-  options: TranscriptionOptions,
-): Promise<string> {
-  const {
+  {
     apiKey,
     model = defaultOptions.model,
     prompt = defaultOptions.prompt,
-  } = options;
+  }: TranscriptionOptions,
+): Promise<string> {
   const fileManager = new GoogleAIFileManager(apiKey);
 
   console.log("Uploading audio file...");
