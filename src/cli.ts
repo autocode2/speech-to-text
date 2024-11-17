@@ -12,6 +12,37 @@ interface CliOptions {
   channels?: number;
   model?: string;
   prompt?: string;
+  format?: "text" | "json";
+}
+
+interface TranscriptionResult {
+  text: string;
+  timestamp: string;
+  input?: string;
+  output?: string;
+  sampleRate?: number;
+  channels?: number;
+  model?: string;
+}
+
+// Handle broken pipe gracefully
+process.stdout.on("error", (err) => {
+  if (err.code === "EPIPE") process.exit(0);
+});
+
+function logStatus(message: string) {
+  if (process.stderr.isTTY) {
+    console.error(message);
+  }
+}
+
+function outputResult(result: TranscriptionResult, format: "text" | "json") {
+  if (format === "json") {
+    process.stdout.write(JSON.stringify(result) + "\n");
+  } else {
+    console.log("\nTranscription:");
+    console.log(result.text);
+  }
 }
 
 async function main() {
@@ -61,6 +92,12 @@ async function main() {
         type: "string",
         default: "Transcribe this audio clip word for word.",
       },
+      format: {
+        alias: "f",
+        describe: "Output format",
+        choices: ["text", "json"] as const,
+        default: process.stdout.isTTY ? "text" : "json",
+      },
     })
     .example("$0 -k YOUR_API_KEY", "Record from microphone and transcribe")
     .example(
@@ -72,6 +109,11 @@ async function main() {
       "Transcribe existing audio file",
     )
     .example("$0 -k YOUR_API_KEY -r 44100 -c 2", "Record in 44.1kHz stereo")
+    .example(
+      "$0 -k YOUR_API_KEY --format json > output.json",
+      "Output in JSON format",
+    )
+    .example("$0 -k YOUR_API_KEY | jq .text", "Pipe transcription text to jq")
     .help()
     .alias("help", "h")
     .version()
@@ -94,24 +136,31 @@ async function main() {
     let transcription: string;
 
     if (argv.input) {
-      // Transcribe existing file
-      console.log(`Transcribing file: ${argv.input}`);
+      logStatus(`Transcribing file: ${argv.input}`);
       transcription = await stt.transcribe(argv.input);
     } else {
-      // Record and transcribe
       if (argv.output) {
-        console.log(`Recording to file: ${argv.output}`);
+        logStatus(`Recording to file: ${argv.output}`);
       }
-      console.log("Starting recording... Press Enter to stop.");
+      logStatus("Starting recording... Press Enter to stop.");
       transcription = await stt.recordAndTranscribe(argv.output);
 
       if (argv.output) {
-        console.log(`Recording saved to: ${argv.output}`);
+        logStatus(`Recording saved to: ${argv.output}`);
       }
     }
 
-    console.log("\nTranscription:");
-    console.log(transcription);
+    const result: TranscriptionResult = {
+      text: transcription,
+      timestamp: new Date().toISOString(),
+      ...(argv.input && { input: argv.input }),
+      ...(argv.output && { output: argv.output }),
+      ...(argv.sampleRate && { sampleRate: argv.sampleRate }),
+      ...(argv.channels && { channels: argv.channels }),
+      ...(argv.model && { model: argv.model }),
+    };
+
+    outputResult(result, argv.format || "text");
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);

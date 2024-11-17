@@ -58,6 +58,7 @@ npx @autocode2/speech-to-text --api-key YOUR_API_KEY [options]
 - `-c, --channels`: Number of audio channels (default: 1)
 - `-m, --model`: Gemini model to use (default: "gemini-1.5-flash")
 - `-p, --prompt`: Custom prompt for transcription
+- `-f, --format`: Output format (text|json, defaults to text in terminal, json in pipe)
 - `-h, --help`: Show help
 - `-v, --version`: Show version number
 
@@ -78,6 +79,28 @@ npx @autocode2/speech-to-text --api-key YOUR_API_KEY -r 44100 -c 2 -o high-quali
 
 # Use custom transcription prompt
 npx @autocode2/speech-to-text --api-key YOUR_API_KEY -p "Provide a detailed transcription with punctuation"
+
+# Output in JSON format
+npx @autocode2/speech-to-text --api-key YOUR_API_KEY --format json > output.json
+
+# Pipe transcription to other tools
+npx @autocode2/speech-to-text --api-key YOUR_API_KEY | jq .text
+```
+
+### JSON Output Format
+
+When using JSON output (either explicitly with `--format json` or implicitly when piping), the output will be a JSON object with the following structure:
+
+```json
+{
+  "text": "The transcribed text",
+  "timestamp": "2024-01-20T12:34:56.789Z",
+  "input": "input-file.wav", // If provided
+  "output": "output-file.wav", // If provided
+  "sampleRate": 16000, // If recording
+  "channels": 1, // If recording
+  "model": "gemini-1.5-flash" // If specified
+}
 ```
 
 ## Library Usage
