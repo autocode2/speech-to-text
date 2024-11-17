@@ -4,6 +4,9 @@
   "description": "A speech-to-text library for node",
   "main": "dist/index.js",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "speech-to-text": "./dist/cli.js"
   },

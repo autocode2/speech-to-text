@@ -2,6 +2,7 @@
   "compilerOptions": {
     /* Language and Environment */
     "target": "es2023" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "outDir": "dist",
 
     /* Modules */
     "module": "nodenext" /* Specify what module code is generated. */,
