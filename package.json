@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "A speech-to-text library for node",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,5 +13,9 @@
     "@types/node": "^22.9.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "dotenv": "^16.4.5"
   }
 }
