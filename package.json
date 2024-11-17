@@ -4,6 +4,16 @@
   "description": "A speech-to-text library for node",
   "main": "dist/index.js",
   "type": "module",
+  "repository": "autocode2/speech-to-text",
+  "keywords": [
+    "audio",
+    "speech",
+    "speech-to-text",
+    "cli",
+    "sox",
+    "google-gemini"
+  ],
+  "homepage": "https://github.com/autocode2/speech-to-text",
   "publishConfig": {
     "access": "public"
   },
