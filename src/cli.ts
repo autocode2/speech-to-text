@@ -1,19 +1,11 @@
 #!/usr/bin/env node
 
-import { config } from "dotenv";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { SpeechToText } from "./index.js";
 
-// Load environment variables
-config();
-
-const API_KEY = process.env.API_KEY;
-if (!API_KEY) {
-  throw new Error("API_KEY not found in environment variables");
-}
-
 interface CliOptions {
+  apiKey: string;
   input?: string;
   output?: string;
   sampleRate?: number;
@@ -24,8 +16,15 @@ interface CliOptions {
 
 async function main() {
   const argv = (await yargs(hideBin(process.argv))
-    .usage("Usage: $0 [options]")
+    .usage("Usage: $0 --api-key YOUR_API_KEY [options]")
     .options({
+      "api-key": {
+        alias: "k",
+        describe: "Google API Key for Gemini",
+        type: "string",
+        demandOption: true,
+        requiresArg: true,
+      },
       input: {
         alias: "i",
         describe:
@@ -63,13 +62,16 @@ async function main() {
         default: "Transcribe this audio clip word for word.",
       },
     })
-    .example("$0", "Record from microphone and transcribe")
+    .example("$0 -k YOUR_API_KEY", "Record from microphone and transcribe")
     .example(
-      "$0 -o recording.wav",
+      "$0 -k YOUR_API_KEY -o recording.wav",
       "Record from microphone, save to file, and transcribe",
     )
-    .example("$0 -i audio.wav", "Transcribe existing audio file")
-    .example("$0 -r 44100 -c 2", "Record in 44.1kHz stereo")
+    .example(
+      "$0 -k YOUR_API_KEY -i audio.wav",
+      "Transcribe existing audio file",
+    )
+    .example("$0 -k YOUR_API_KEY -r 44100 -c 2", "Record in 44.1kHz stereo")
     .help()
     .alias("help", "h")
     .version()
@@ -78,7 +80,7 @@ async function main() {
 
   try {
     const stt = new SpeechToText({
-      apiKey: API_KEY,
+      apiKey: argv.apiKey,
       recording: {
         sampleRate: argv.sampleRate,
         channels: argv.channels,

@@ -16,11 +16,7 @@ A Node.js library and CLI tool for converting speech to text using sox for audio
 The quickest way to use the tool is via `npx`:
 
 ```bash
-# Set your Google API key
-export API_KEY=your_google_api_key_here
-
-# Run the tool
-npx @autocode2/speech-to-text
+npx @autocode2/speech-to-text --api-key YOUR_API_KEY
 ```
 
 ## Installation
@@ -36,7 +32,7 @@ npm install -g @autocode2/speech-to-text
 Then use it directly:
 
 ```bash
-speech-to-text
+speech-to-text --api-key YOUR_API_KEY
 ```
 
 ### Local Installation
@@ -50,11 +46,12 @@ npm install @autocode2/speech-to-text
 ## CLI Usage
 
 ```bash
-npx @autocode2/speech-to-text [options]
+npx @autocode2/speech-to-text --api-key YOUR_API_KEY [options]
 ```
 
 ### Options
 
+- `-k, --api-key`: Google API Key for Gemini (required)
 - `-i, --input`: Input audio file to transcribe (if not provided, will record from microphone)
 - `-o, --output`: Output file to save the recording (only applies when recording from microphone)
 - `-r, --sample-rate`: Sample rate for recording in Hz (default: 16000)
@@ -68,19 +65,19 @@ npx @autocode2/speech-to-text [options]
 
 ```bash
 # Record from microphone and transcribe (uses temporary file)
-npx @autocode2/speech-to-text
+npx @autocode2/speech-to-text --api-key YOUR_API_KEY
 
 # Record, save to file, and transcribe
-npx @autocode2/speech-to-text -o recording.wav
+npx @autocode2/speech-to-text --api-key YOUR_API_KEY -o recording.wav
 
 # Transcribe existing file
-npx @autocode2/speech-to-text -i existing.wav
+npx @autocode2/speech-to-text --api-key YOUR_API_KEY -i existing.wav
 
 # Record in high quality
-npx @autocode2/speech-to-text -r 44100 -c 2 -o high-quality.wav
+npx @autocode2/speech-to-text --api-key YOUR_API_KEY -r 44100 -c 2 -o high-quality.wav
 
 # Use custom transcription prompt
-npx @autocode2/speech-to-text -p "Provide a detailed transcription with punctuation"
+npx @autocode2/speech-to-text --api-key YOUR_API_KEY -p "Provide a detailed transcription with punctuation"
 ```
 
 ## Library Usage
@@ -88,38 +85,29 @@ npx @autocode2/speech-to-text -p "Provide a detailed transcription with punctuat
 You can also use this as a library in your Node.js projects:
 
 ```typescript
-import { SpeechToText } from '@autocode2/speech-to-text';
+import { SpeechToText } from "@autocode2/speech-to-text";
 
 const stt = new SpeechToText({
-    apiKey: 'your-google-api-key',
-    recording: {
-        sampleRate: 16000,
-        channels: 1
-    },
-    transcription: {
-        model: 'gemini-1.5-flash',
-        prompt: 'Custom transcription prompt'
-    }
+  apiKey: "your-google-api-key",
+  recording: {
+    sampleRate: 16000,
+    channels: 1,
+  },
+  transcription: {
+    model: "gemini-1.5-flash",
+    prompt: "Custom transcription prompt",
+  },
 });
 
 // Record to temporary file (automatically cleaned up)
 const text1 = await stt.recordAndTranscribe();
 
 // Record and save to file
-const text2 = await stt.recordAndTranscribe('output.wav');
+const text2 = await stt.recordAndTranscribe("output.wav");
 
 // Transcribe existing file
-const text3 = await stt.transcribe('existing.wav');
+const text3 = await stt.transcribe("existing.wav");
 ```
-
-## Configuration
-
-The tool can be configured using command line arguments or environment variables:
-
-- `API_KEY`: Your Google API key (required)
-  ```bash
-  export API_KEY=your_google_api_key_here
-  ```
 
 ## License
 
