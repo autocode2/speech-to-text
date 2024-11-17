@@ -14,7 +14,8 @@ if (!API_KEY) {
 }
 
 interface CliOptions {
-    file?: string;
+    input?: string;
+    output?: string;
     sampleRate?: number;
     channels?: number;
     model?: string;
@@ -25,9 +26,14 @@ async function main() {
     const argv = await yargs(hideBin(process.argv))
         .usage('Usage: $0 [options]')
         .options({
-            'file': {
-                alias: 'f',
-                describe: 'Audio file to transcribe (if not provided, will record from microphone)',
+            'input': {
+                alias: 'i',
+                describe: 'Input audio file to transcribe (if not provided, will record from microphone)',
+                type: 'string'
+            },
+            'output': {
+                alias: 'o',
+                describe: 'Output file to save the recording (only applies when recording from microphone)',
                 type: 'string'
             },
             'sample-rate': {
@@ -56,7 +62,8 @@ async function main() {
             }
         })
         .example('$0', 'Record from microphone and transcribe')
-        .example('$0 -f audio.wav', 'Transcribe existing audio file')
+        .example('$0 -o recording.wav', 'Record from microphone, save to file, and transcribe')
+        .example('$0 -i audio.wav', 'Transcribe existing audio file')
         .example('$0 -r 44100 -c 2', 'Record in 44.1kHz stereo')
         .help()
         .alias('help', 'h')
@@ -79,12 +86,21 @@ async function main() {
 
         let transcription: string;
 
-        if (argv.file) {
-            console.log(`Transcribing file: ${argv.file}`);
-            transcription = await stt.transcribe(argv.file);
+        if (argv.input) {
+            // Transcribe existing file
+            console.log(`Transcribing file: ${argv.input}`);
+            transcription = await stt.transcribe(argv.input);
         } else {
+            // Record and transcribe
+            if (argv.output) {
+                console.log(`Recording to file: ${argv.output}`);
+            }
             console.log('Starting recording... Press Enter to stop.');
-            transcription = await stt.recordAndTranscribe();
+            transcription = await stt.recordAndTranscribe(argv.output);
+            
+            if (argv.output) {
+                console.log(`Recording saved to: ${argv.output}`);
+            }
         }
         
         console.log('\nTranscription:');

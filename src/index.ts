@@ -2,6 +2,9 @@ import { RecordingOptions } from './lib/sox/recorder.js';
 import { TranscriptionOptions } from './lib/gemini/transcriber.js';
 import { recordAudio } from './lib/sox/recorder.js';
 import { transcribeAudio } from './lib/gemini/transcriber.js';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { unlink } from 'fs/promises';
 
 export interface SpeechToTextOptions {
     apiKey: string;
@@ -27,25 +30,50 @@ export class SpeechToText {
     }
 
     /**
+     * Creates a temporary file path
+     */
+    private getTempFilePath(): string {
+        return join(tmpdir(), `stt-recording-${Date.now()}.wav`);
+    }
+
+    /**
+     * Safely deletes a file if it exists
+     */
+    private async cleanupFile(filepath: string): Promise<void> {
+        try {
+            await unlink(filepath);
+        } catch (error) {
+            // Ignore errors if file doesn't exist
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+                console.warn(`Warning: Failed to cleanup file ${filepath}:`, error);
+            }
+        }
+    }
+
+    /**
      * Records audio from the microphone and transcribes it
+     * @param outputFile Optional path to save the recording
      * @returns The transcribed text
      */
-    async recordAndTranscribe(): Promise<string> {
-        const tempFile = `recording-${Date.now()}.wav`;
+    async recordAndTranscribe(outputFile?: string): Promise<string> {
+        const audioFile = outputFile ?? this.getTempFilePath();
         
         try {
             // Record audio
-            await recordAudio(tempFile, this.recordingOptions);
+            await recordAudio(audioFile, this.recordingOptions);
 
             // Transcribe audio
-            const transcription = await transcribeAudio(tempFile, {
+            const transcription = await transcribeAudio(audioFile, {
                 apiKey: this.apiKey,
                 ...this.transcriptionOptions
             });
 
             return transcription;
         } finally {
-            // TODO: Clean up temp file
+            // Clean up temp file if no output file was specified
+            if (!outputFile) {
+                await this.cleanupFile(audioFile);
+            }
         }
     }
 
