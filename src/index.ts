@@ -1,37 +1,67 @@
-import { config } from 'dotenv';
-import { resolve } from 'path';
+import { RecordingOptions } from './lib/sox/recorder.js';
+import { TranscriptionOptions } from './lib/gemini/transcriber.js';
 import { recordAudio } from './lib/sox/recorder.js';
 import { transcribeAudio } from './lib/gemini/transcriber.js';
 
-// Load environment variables
-config();
-
-const API_KEY = process.env.API_KEY;
-if (!API_KEY) {
-    throw new Error('API_KEY not found in environment variables');
+export interface SpeechToTextOptions {
+    apiKey: string;
+    recording?: RecordingOptions;
+    transcription?: Omit<TranscriptionOptions, 'apiKey'>;
 }
 
-async function main() {
-    try {
-        // Record audio
-        const outputFile = resolve('./recording.wav');
-        await recordAudio(outputFile, {
+export class SpeechToText {
+    private apiKey: string;
+    private recordingOptions: RecordingOptions;
+    private transcriptionOptions: Omit<TranscriptionOptions, 'apiKey'>;
+
+    constructor(options: SpeechToTextOptions) {
+        this.apiKey = options.apiKey;
+        this.recordingOptions = options.recording ?? {
             sampleRate: 16000,
             channels: 1
-        });
-        console.log(`Audio saved to ${outputFile}`);
-
-        // Transcribe audio
-        const transcription = await transcribeAudio(outputFile, {
-            apiKey: API_KEY,
+        };
+        this.transcriptionOptions = options.transcription ?? {
+            model: "gemini-1.5-flash",
             prompt: "Transcribe this audio clip word for word."
-        });
+        };
+    }
 
-        console.log('\nTranscription:');
-        console.log(transcription);
-    } catch (error) {
-        console.error('Error:', error);
+    /**
+     * Records audio from the microphone and transcribes it
+     * @returns The transcribed text
+     */
+    async recordAndTranscribe(): Promise<string> {
+        const tempFile = `recording-${Date.now()}.wav`;
+        
+        try {
+            // Record audio
+            await recordAudio(tempFile, this.recordingOptions);
+
+            // Transcribe audio
+            const transcription = await transcribeAudio(tempFile, {
+                apiKey: this.apiKey,
+                ...this.transcriptionOptions
+            });
+
+            return transcription;
+        } finally {
+            // TODO: Clean up temp file
+        }
+    }
+
+    /**
+     * Transcribes an existing audio file
+     * @param audioFile Path to the audio file
+     * @returns The transcribed text
+     */
+    async transcribe(audioFile: string): Promise<string> {
+        return await transcribeAudio(audioFile, {
+            apiKey: this.apiKey,
+            ...this.transcriptionOptions
+        });
     }
 }
 
-main();
+// Export the types and utilities for library users
+export type { RecordingOptions } from './lib/sox/recorder.js';
+export type { TranscriptionOptions } from './lib/gemini/transcriber.js';
