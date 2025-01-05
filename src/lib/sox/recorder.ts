@@ -40,15 +40,15 @@ export async function recordAudio(
 
     const rl = createInterface({
       input: process.stdin,
-      output: process.stdout,
+      output: process.stderr,
     });
 
-    console.log("Recording... Press Enter to stop.");
+    console.error("Recording... Press Enter to stop.");
 
     rl.question("", () => {
       sox.kill();
       rl.close();
-      console.log("Recording stopped.");
+      console.error("Recording stopped.");
       resolve();
     });
   });
