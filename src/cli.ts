@@ -40,8 +40,7 @@ function outputResult(result: TranscriptionResult, format: "text" | "json") {
   if (format === "json") {
     process.stdout.write(JSON.stringify(result) + "\n");
   } else {
-    console.log("\nTranscription:");
-    console.log(result.text);
+    process.stdout.write(result.text + "\n");
   }
 }
 

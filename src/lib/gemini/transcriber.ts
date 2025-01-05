@@ -28,16 +28,16 @@ export async function transcribeAudio(
 ): Promise<string> {
   const fileManager = new GoogleAIFileManager(apiKey);
 
-  console.log("Uploading audio file...");
+  console.error("Uploading audio file...");
   const uploadResult = await fileManager.uploadFile(audioPath, {
     mimeType: "audio/wav",
     displayName: "Voice Recording",
   });
 
-  console.log("Processing audio...");
+  console.error("Processing audio...");
   let file = await fileManager.getFile(uploadResult.file.name);
   while (file.state === FileState.PROCESSING) {
-    process.stdout.write(".");
+    process.stderr.write(".");
     await new Promise((resolve) => setTimeout(resolve, 10_000));
     file = await fileManager.getFile(uploadResult.file.name);
   }
@@ -46,7 +46,7 @@ export async function transcribeAudio(
     throw new Error("Audio processing failed.");
   }
 
-  console.log("\nGenerating transcription...");
+  console.error("\nGenerating transcription...");
   const genAI = new GoogleGenerativeAI(apiKey);
   const genModel = genAI.getGenerativeModel({ model });
   const result = await genModel.generateContent([
